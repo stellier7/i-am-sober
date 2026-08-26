@@ -6,6 +6,7 @@ import Counter from "@/components/Counter";
 import MilestoneStrip from "@/components/MilestoneStrip";
 import PledgeCard from "@/components/PledgeCard";
 import ReasonsCard from "@/components/ReasonsCard";
+import QuoteCard from "@/components/QuoteCard";
 import { useSoberStats } from "@/lib/useSoberStats";
 import { getSubstanceEmoji, getSubstanceLabel } from "@/lib/substances";
 import type { Tracker } from "@/lib/types";
@@ -66,6 +67,8 @@ export default function TrackerCard({
           <Counter stats={stats} isActive={isActive} />
         </div>
       </div>
+
+      <QuoteCard trackerId={tracker.id} />
 
       {stats.nextMilestone && (
         <p
