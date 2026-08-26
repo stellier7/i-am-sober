@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { PREDEFINED_SUBSTANCES } from "@/lib/substances";
+import { nextTrackerSortOrder } from "@/lib/trackerOrder";
 
 export default function NewTrackerPage() {
   const router = useRouter();
@@ -44,12 +45,15 @@ export default function NewTrackerPage() {
       return;
     }
 
+    const sortOrder = await nextTrackerSortOrder(supabase, user.id);
+
     const { error: insertError } = await supabase.from("trackers").insert({
       user_id: user.id,
       substance: mode === "custom" ? "custom" : substance,
       label: mode === "custom" ? customLabel.trim() : null,
       sober_since: new Date(soberSince).toISOString(),
       reasons,
+      sort_order: sortOrder,
     });
 
     setSaving(false);

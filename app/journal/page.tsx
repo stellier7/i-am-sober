@@ -20,6 +20,7 @@ export default async function JournalPage() {
     .from("trackers")
     .select("id, substance, label")
     .eq("user_id", user.id)
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
 
   if (!trackers || trackers.length === 0) redirect("/onboarding");

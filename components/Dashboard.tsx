@@ -35,6 +35,15 @@ export default function Dashboard({
 
       <TrackerCarousel trackers={trackers} userId={userId} todayEntries={todayEntries} />
 
+      {trackers.length > 1 && (
+        <Link
+          href="/trackers/reorder"
+          className="mt-4 block text-center text-xs text-mist hover:text-paper"
+        >
+          Reorder trackers
+        </Link>
+      )}
+
       <Link
         href="/trackers/new"
         className="mt-6 block text-center rounded-2xl border border-dashed border-surface2 py-3 text-sm text-mist hover:border-gold/50 hover:text-paper transition-colors"

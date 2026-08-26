@@ -10,6 +10,7 @@ create table if not exists trackers (
   label text,
   sober_since timestamptz not null,
   reasons text[] not null default '{}',
+  sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );
 
@@ -29,7 +30,7 @@ create unique index if not exists trackers_user_custom_label_idx
   on trackers (user_id, lower(label))
   where substance = 'custom';
 
-create index if not exists trackers_user_idx on trackers (user_id, created_at);
+create index if not exists trackers_user_idx on trackers (user_id, sort_order);
 
 -- One row per tracker per day: daily pledge + optional note.
 create table if not exists entries (

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { PREDEFINED_SUBSTANCES } from "@/lib/substances";
+import { nextTrackerSortOrder } from "@/lib/trackerOrder";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -48,11 +49,13 @@ export default function OnboardingPage() {
     }
 
     const soberIso = new Date(soberSince).toISOString();
+    let sortOrder = await nextTrackerSortOrder(supabase, user.id);
     const rows = selected.map((substance) => ({
       user_id: user.id,
       substance,
       sober_since: soberIso,
       reasons,
+      sort_order: sortOrder++,
     }));
 
     const { error: insertError } = await supabase.from("trackers").insert(rows);
