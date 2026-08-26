@@ -29,7 +29,7 @@ Open `http://localhost:3000`, enter your email, click the magic link it sends yo
 ## 3. Deploy to Vercel
 1. Push this folder to a GitHub repo.
 2. Import it in Vercel.
-3. Add the two env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in the Vercel project settings.
+3. Add the two env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in the Vercel project settings — enable them for **Production and Preview**, then redeploy.
 4. Deploy, then add the deployed URL to Supabase's redirect allow-list (same place as step 1.4).
 
 ## 4. Install it as an app on your phone/iPad

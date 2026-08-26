@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+
+export const dynamic = "force-dynamic";
 
 export default async function JournalPage() {
+  if (!isSupabaseConfigured()) redirect("/login");
+
   const supabase = createClient();
   const {
     data: { user },

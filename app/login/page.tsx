@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+const supabaseConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -32,11 +36,22 @@ export default function LoginPage() {
         A private, one-day-at-a-time tracker.
       </p>
 
-      {sent ? (
+      {!supabaseConfigured && (
+        <div className="mt-8 rounded-xl border border-rose/40 bg-surface p-4 text-sm text-paper">
+          <p className="font-medium text-rose">Supabase is not configured</p>
+          <p className="mt-2 text-mist">
+            Add <code className="text-paper">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+            <code className="text-paper">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in your Vercel
+            project settings (Production and Preview), then redeploy.
+          </p>
+        </div>
+      )}
+
+      {supabaseConfigured && sent ? (
         <p className="mt-10 text-center text-sm text-paper">
           Check <span className="text-gold">{email}</span> for a sign-in link.
         </p>
-      ) : (
+      ) : supabaseConfigured ? (
         <form onSubmit={sendLink} className="mt-10 space-y-3">
           <input
             type="email"
@@ -55,7 +70,7 @@ export default function LoginPage() {
           </button>
           {error && <p className="text-xs text-rose text-center">{error}</p>}
         </form>
-      )}
+      ) : null}
     </main>
   );
 }

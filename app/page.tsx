@@ -1,8 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import Dashboard from "@/components/Dashboard";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
+  if (!isSupabaseConfigured()) redirect("/login");
+
   const supabase = createClient();
 
   const {
