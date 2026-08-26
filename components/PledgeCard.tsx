@@ -7,10 +7,14 @@ const REASONS_PLACEHOLDER = "Anything on your mind today? (optional)";
 
 export default function PledgeCard({
   userId,
+  trackerId,
+  substanceLabel,
   todayPledged,
   todayNote,
 }: {
   userId: string;
+  trackerId: string;
+  substanceLabel: string;
   todayPledged: boolean;
   todayNote: string | null;
 }) {
@@ -27,8 +31,14 @@ export default function PledgeCard({
     const { error } = await supabase
       .from("entries")
       .upsert(
-        { user_id: userId, entry_date: today, pledged: true, note: note || null },
-        { onConflict: "user_id,entry_date" }
+        {
+          user_id: userId,
+          tracker_id: trackerId,
+          entry_date: today,
+          pledged: true,
+          note: note || null,
+        },
+        { onConflict: "tracker_id,entry_date" }
       );
     setSaving(false);
     if (!error) {
@@ -44,8 +54,14 @@ export default function PledgeCard({
     const { error } = await supabase
       .from("entries")
       .upsert(
-        { user_id: userId, entry_date: today, pledged, note: note || null },
-        { onConflict: "user_id,entry_date" }
+        {
+          user_id: userId,
+          tracker_id: trackerId,
+          entry_date: today,
+          pledged,
+          note: note || null,
+        },
+        { onConflict: "tracker_id,entry_date" }
       );
     setSaving(false);
     if (!error) {
@@ -57,7 +73,7 @@ export default function PledgeCard({
   return (
     <div className="rounded-2xl bg-surface p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg text-paper">Today's pledge</h2>
+        <h2 className="font-display text-lg text-paper">Today's pledge — {substanceLabel}</h2>
         {saved && <span className="text-xs text-gold">Saved</span>}
       </div>
 

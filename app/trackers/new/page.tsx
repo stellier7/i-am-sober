@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { PREDEFINED_SUBSTANCES } from "@/lib/substances";
 
-export default function OnboardingPage() {
+export default function NewTrackerPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>(["alcohol"]);
+  const [mode, setMode] = useState<"preset" | "custom">("preset");
+  const [substance, setSubstance] = useState("alcohol");
+  const [customLabel, setCustomLabel] = useState("");
   const [soberSince, setSoberSince] = useState(() =>
     new Date().toISOString().slice(0, 16)
   );
@@ -16,21 +19,15 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function toggleSubstance(id: string) {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  }
-
   function addReason() {
     if (!reasonDraft.trim()) return;
     setReasons([...reasons, reasonDraft.trim()]);
     setReasonDraft("");
   }
 
-  async function finish() {
-    if (selected.length === 0) {
-      setError("Pick at least one substance to track.");
+  async function save() {
+    if (mode === "custom" && !customLabel.trim()) {
+      setError("Give your custom tracker a name.");
       return;
     }
 
@@ -47,15 +44,13 @@ export default function OnboardingPage() {
       return;
     }
 
-    const soberIso = new Date(soberSince).toISOString();
-    const rows = selected.map((substance) => ({
+    const { error: insertError } = await supabase.from("trackers").insert({
       user_id: user.id,
-      substance,
-      sober_since: soberIso,
+      substance: mode === "custom" ? "custom" : substance,
+      label: mode === "custom" ? customLabel.trim() : null,
+      sober_since: new Date(soberSince).toISOString(),
       reasons,
-    }));
-
-    const { error: insertError } = await supabase.from("trackers").insert(rows);
+    });
 
     setSaving(false);
     if (insertError) {
@@ -68,32 +63,61 @@ export default function OnboardingPage() {
 
   return (
     <main className="mx-auto max-w-sm px-6 py-16">
-      <h1 className="font-display italic text-2xl text-paper">Let's set up your trackers</h1>
-      <p className="mt-1 text-sm text-mist">Pick everything you're tracking. You can add more later.</p>
+      <Link href="/" className="text-xs text-mist hover:text-paper">
+        ← Back
+      </Link>
 
-      <div className="mt-8">
-        <label className="text-xs uppercase tracking-wide text-mist">What are you tracking?</label>
-        <div className="mt-2 flex flex-wrap gap-2">
+      <h1 className="mt-6 font-display italic text-2xl text-paper">Add a tracker</h1>
+      <p className="mt-1 text-sm text-mist">Track another substance with its own counter.</p>
+
+      <div className="mt-6 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setMode("preset")}
+          className={`flex-1 rounded-xl py-2 text-sm ${
+            mode === "preset" ? "bg-gold text-ink" : "bg-surface text-mist"
+          }`}
+        >
+          Common
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("custom")}
+          className={`flex-1 rounded-xl py-2 text-sm ${
+            mode === "custom" ? "bg-gold text-ink" : "bg-surface text-mist"
+          }`}
+        >
+          Custom
+        </button>
+      </div>
+
+      {mode === "preset" ? (
+        <div className="mt-6 flex flex-wrap gap-2">
           {PREDEFINED_SUBSTANCES.map((s) => (
             <button
               key={s.id}
               type="button"
-              onClick={() => toggleSubstance(s.id)}
+              onClick={() => setSubstance(s.id)}
               className={`rounded-full px-4 py-2 text-sm transition-colors ${
-                selected.includes(s.id) ? "bg-gold text-ink" : "bg-surface text-mist"
+                substance === s.id ? "bg-gold text-ink" : "bg-surface text-mist"
               }`}
             >
               {s.emoji} {s.label}
             </button>
           ))}
         </div>
-      </div>
+      ) : (
+        <input
+          type="text"
+          value={customLabel}
+          onChange={(e) => setCustomLabel(e.target.value)}
+          placeholder="e.g. Social media, gambling…"
+          className="mt-6 w-full rounded-xl bg-surface p-3 text-sm text-paper placeholder:text-mist/60 focus:outline-none"
+        />
+      )}
 
       <div className="mt-6">
-        <label className="text-xs uppercase tracking-wide text-mist">
-          When did your streaks start?
-        </label>
-        <p className="mt-1 text-xs text-mist/80">Same start time for all selected — you can adjust each one later.</p>
+        <label className="text-xs uppercase tracking-wide text-mist">Streak start</label>
         <input
           type="datetime-local"
           value={soberSince}
@@ -103,16 +127,14 @@ export default function OnboardingPage() {
       </div>
 
       <div className="mt-6">
-        <label className="text-xs uppercase tracking-wide text-mist">
-          Why are you doing this? (optional, shared across trackers)
-        </label>
+        <label className="text-xs uppercase tracking-wide text-mist">Reasons (optional)</label>
         <div className="mt-2 flex gap-2">
           <input
             type="text"
             value={reasonDraft}
             onChange={(e) => setReasonDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addReason())}
-            placeholder="e.g. Be present for my family"
+            placeholder="Why this one?"
             className="flex-1 rounded-xl bg-surface p-3 text-sm text-paper placeholder:text-mist/60 focus:outline-none"
           />
           <button
@@ -137,11 +159,11 @@ export default function OnboardingPage() {
 
       <button
         type="button"
-        onClick={finish}
+        onClick={save}
         disabled={saving}
         className="mt-10 w-full rounded-xl bg-gold text-ink font-medium py-3 disabled:opacity-60"
       >
-        {saving ? "Saving…" : "Start tracking"}
+        {saving ? "Saving…" : "Add tracker"}
       </button>
       {error && <p className="mt-2 text-xs text-rose text-center">{error}</p>}
     </main>

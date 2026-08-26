@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import Dashboard from "@/components/Dashboard";
+import type { Tracker, TrackerEntry } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,29 +17,32 @@ export default async function Home() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("sober_since, reasons")
-    .eq("id", user.id)
-    .single();
+  const { data: trackers } = await supabase
+    .from("trackers")
+    .select("id, substance, label, sober_since, reasons")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true });
 
-  if (!profile) redirect("/onboarding");
+  if (!trackers || trackers.length === 0) redirect("/onboarding");
 
   const today = new Date().toISOString().slice(0, 10);
-  const { data: todayEntry } = await supabase
+  const trackerIds = trackers.map((t) => t.id);
+  const { data: todayEntriesRaw } = await supabase
     .from("entries")
-    .select("pledged, note")
-    .eq("user_id", user.id)
-    .eq("entry_date", today)
-    .maybeSingle();
+    .select("tracker_id, pledged, note")
+    .in("tracker_id", trackerIds)
+    .eq("entry_date", today);
+
+  const todayEntries: Record<string, TrackerEntry> = {};
+  for (const entry of todayEntriesRaw ?? []) {
+    todayEntries[entry.tracker_id] = entry;
+  }
 
   return (
     <Dashboard
       userId={user.id}
-      soberSince={profile.sober_since}
-      reasons={profile.reasons ?? []}
-      todayPledged={todayEntry?.pledged ?? false}
-      todayNote={todayEntry?.note ?? null}
+      trackers={trackers as Tracker[]}
+      todayEntries={todayEntries}
     />
   );
 }

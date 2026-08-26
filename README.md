@@ -3,15 +3,17 @@
 Next.js + Tailwind + Supabase. Installable as a PWA. Built for one user (you) with cloud sync so your streak survives a reinstall or a new device.
 
 ## What it does
-- **Dashboard** — a live day/hour/minute counter, with a "dawn arc" visual that grows from a sliver of gold on day one to a full sunrise by day 90.
-- **Daily pledge** — a one-tap daily check-in, with an optional note.
-- **Milestones** — 1, 7, 30, 60, 90, 180, 365 days, visualized as a strip.
-- **Journal** — a running log of your daily notes.
+- **Dashboard** — swipeable auto-scrolling cards, one per substance (alcohol, nicotine, weed, or custom). Each has its own live counter, dawn arc, milestones, and daily pledge.
+- **Daily pledge** — a one-tap daily check-in per substance, with an optional note.
+- **Milestones** — 1, 7, 30, 60, 90, 180, 365 days, visualized as a strip on each card.
+- **Journal** — a running log of your daily notes, tagged by substance.
 - **Auth** — email magic-link sign-in (no password to manage), via Supabase.
+- **Add more** — tap "+ Add another substance" on the dashboard to track additional things.
 
 ## 1. Set up Supabase (free tier is plenty)
 1. Go to [supabase.com](https://supabase.com) → New project.
-2. Once it's created, go to **SQL Editor** → New query, paste the contents of `supabase/schema.sql`, and run it. This creates the `profiles` and `entries` tables with row-level security so only you can ever read your own data.
+2. Once it's created, go to **SQL Editor** → New query, paste the contents of `supabase/schema.sql`, and run it. This creates the `trackers` and `entries` tables with row-level security so only you can ever read your own data.
+   - **Already set up with the old single-substance schema?** Run `supabase/migration-multi-tracker.sql` instead — it migrates your existing data.
 3. Go to **Project Settings → API** and copy the **Project URL** and **anon public key**.
 4. Go to **Authentication → URL Configuration** and set:
    - **Site URL** — your production Vercel URL (e.g. `https://i-am-sober.vercel.app`)
@@ -46,5 +48,5 @@ Open the deployed URL in Safari/Chrome → Share → **Add to Home Screen**. It'
 ## Notes / things you might want to change
 - **App icons**: `public/manifest.json` points to `public/icons/icon-192.png` and `icon-512.png`, which aren't included — drop your own PNGs in there (or ask me to generate placeholders).
 - **Milestones**: edit the `MILESTONES` array in `lib/useSoberStats.ts`.
-- **Multiple addictions at once**: the schema tracks one `sober_since` per user. If you want to track more than one thing simultaneously, `profiles` would need to become a list rather than a single row — happy to extend it if you want that.
-- **Streak reset**: there's currently no "I slipped, reset my counter" flow — just update `sober_since` in the `profiles` table (or I can add a settings page for this).
+- **Multiple addictions at once**: each substance is its own tracker with a separate counter and pledge. Swipe between cards or let them auto-scroll.
+- **Streak reset**: update `sober_since` for a tracker in the Supabase table editor (or ask for a settings page).
