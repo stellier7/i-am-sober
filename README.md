@@ -1,4 +1,4 @@
-# Daybreak — a private sobriety tracker
+# iAmSober — a private sobriety tracker
 
 Next.js + Tailwind + Supabase. Installable as a PWA. Built for one user (you) with cloud sync so your streak survives a reinstall or a new device.
 

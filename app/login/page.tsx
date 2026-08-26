@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto max-w-sm px-6 pt-24">
-      <h1 className="font-display italic text-3xl text-paper text-center">Daybreak</h1>
+      <h1 className="font-display italic text-3xl text-paper text-center">iAmSober</h1>
       <p className="mt-2 text-center text-sm text-mist">
         A private, one-day-at-a-time tracker.
       </p>

@@ -1,6 +1,6 @@
 {
-  "name": "Daybreak — Sobriety Tracker",
-  "short_name": "Daybreak",
+  "name": "iAmSober — Sobriety Tracker",
+  "short_name": "iAmSober",
   "description": "A private, one-day-at-a-time sobriety tracker.",
   "start_url": "/",
   "display": "standalone",

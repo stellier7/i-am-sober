@@ -27,7 +27,7 @@ export default function Dashboard({
   return (
     <main className="mx-auto max-w-md px-5 pb-16 pt-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display italic text-2xl text-paper">Daybreak</h1>
+        <h1 className="font-display italic text-2xl text-paper">iAmSober</h1>
         <button onClick={signOut} className="text-xs text-mist hover:text-paper">
           Sign out
         </button>

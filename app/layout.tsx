@@ -22,13 +22,13 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Daybreak — sobriety tracker",
+  title: "iAmSober — sobriety tracker",
   description: "A private, one-day-at-a-time sobriety tracker.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Daybreak",
+    title: "iAmSober",
   },
 };
 
