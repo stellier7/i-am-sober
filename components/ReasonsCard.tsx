@@ -55,7 +55,7 @@ export default function ReasonsCard({
   }
 
   return (
-    <div className="mt-4 rounded-2xl bg-surface p-5">
+    <div className="mt-4 glass-card rounded-2xl p-5">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-lg text-paper">Why you started</h3>
         {saved && <span className="text-xs text-gold">Saved</span>}

@@ -71,7 +71,7 @@ export default function PledgeCard({
   }
 
   return (
-    <div className="rounded-2xl bg-surface p-5">
+    <div className="glass-card rounded-2xl p-5 transition-shadow duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.32)]">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg text-paper">Today's pledge — {substanceLabel}</h2>
         {saved && <span className="text-xs text-gold">Saved</span>}
@@ -85,7 +85,7 @@ export default function PledgeCard({
         <button
           onClick={takePledge}
           disabled={saving}
-          className="mt-3 w-full rounded-xl bg-gold text-ink font-medium py-3 transition-opacity disabled:opacity-60"
+          className="mt-3 w-full rounded-xl bg-gold text-ink font-medium py-3 transition-all duration-200 hover:brightness-110 hover:shadow-[0_4px_20px_rgba(232,168,87,0.35)] active:scale-[0.98] disabled:opacity-60"
         >
           {saving ? "Saving…" : "I pledge to stay sober today"}
         </button>

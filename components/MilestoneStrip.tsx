@@ -8,8 +8,8 @@ export default function MilestoneStrip({ totalDays }: { totalDays: number }) {
         return (
           <div key={m} className="flex flex-col items-center gap-1.5 flex-1">
             <div
-              className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                reached ? "bg-gold" : "bg-surface2"
+              className={`h-2.5 w-2.5 rounded-full transition-all duration-500 ${
+                reached ? "bg-gold scale-110 shadow-[0_0_8px_rgba(232,168,87,0.5)]" : "bg-surface2"
               }`}
               aria-hidden
             />

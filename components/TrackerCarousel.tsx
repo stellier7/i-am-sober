@@ -16,15 +16,44 @@ export default function TrackerCarousel({
   todayEntries: Record<string, TrackerEntry>;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [focusOffsets, setFocusOffsets] = useState<number[]>(() => trackers.map(() => 0));
   const [paused, setPaused] = useState(false);
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const scrollToIndex = useCallback((index: number) => {
+  const updateFocus = useCallback(() => {
     const container = scrollRef.current;
     if (!container) return;
-    const slide = container.children[index] as HTMLElement | undefined;
-    slide?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+
+    const viewportCenter = container.scrollLeft + container.clientWidth / 2;
+    const offsets: number[] = [];
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    slideRefs.current.forEach((slide, i) => {
+      if (!slide) {
+        offsets.push(0);
+        return;
+      }
+      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+      const offset = (slideCenter - viewportCenter) / container.clientWidth;
+      offsets.push(offset);
+
+      const distance = Math.abs(offset);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    });
+
+    setFocusOffsets(offsets);
+    setActiveIndex(closestIndex);
+  }, []);
+
+  const scrollToIndex = useCallback((index: number) => {
+    const slide = slideRefs.current[index];
+    slide?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, []);
 
   const pauseAutoScroll = useCallback(() => {
@@ -34,19 +63,23 @@ export default function TrackerCarousel({
   }, []);
 
   useEffect(() => {
+    if (trackers.length <= 1) return;
+    requestAnimationFrame(() => scrollToIndex(0));
+  }, [trackers.length, scrollToIndex]);
+
+  useEffect(() => {
     const container = scrollRef.current;
-    if (!container || trackers.length <= 1) return;
+    if (!container) return;
 
-    const onScroll = () => {
-      const width = container.clientWidth;
-      if (!width) return;
-      const index = Math.round(container.scrollLeft / width);
-      setActiveIndex(Math.min(index, trackers.length - 1));
+    updateFocus();
+    container.addEventListener("scroll", updateFocus, { passive: true });
+    window.addEventListener("resize", updateFocus);
+
+    return () => {
+      container.removeEventListener("scroll", updateFocus);
+      window.removeEventListener("resize", updateFocus);
     };
-
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
-  }, [trackers.length]);
+  }, [trackers.length, updateFocus]);
 
   useEffect(() => {
     if (trackers.length <= 1 || paused) return;
@@ -70,50 +103,83 @@ export default function TrackerCarousel({
 
   if (trackers.length === 0) return null;
 
+  if (trackers.length === 1) {
+    return (
+      <div className="mx-auto max-w-sm">
+        <TrackerCard
+          tracker={trackers[0]}
+          userId={userId}
+          todayPledged={todayEntries[trackers[0].id]?.pledged ?? false}
+          todayNote={todayEntries[trackers[0].id]?.note ?? null}
+          isActive
+          focusOffset={0}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="relative">
+    <div className="relative -mx-5" style={{ perspective: "1200px" }}>
       <div
         ref={scrollRef}
-        className="flex snap-x snap-mandatory overflow-x-auto scrollbar-none -mx-5 px-5 pb-2"
+        className="carousel-track flex snap-x snap-mandatory overflow-x-auto scrollbar-none gap-4 px-5 pb-3"
         style={{ scrollBehavior: "smooth" }}
         onTouchStart={pauseAutoScroll}
         onMouseEnter={pauseAutoScroll}
         onWheel={pauseAutoScroll}
       >
-        {trackers.map((tracker) => (
-          <div
-            key={tracker.id}
-            className="w-full shrink-0 snap-start snap-always pr-4 last:pr-0"
-          >
-            <TrackerCard
-              tracker={tracker}
-              userId={userId}
-              todayPledged={todayEntries[tracker.id]?.pledged ?? false}
-              todayNote={todayEntries[tracker.id]?.note ?? null}
-            />
-          </div>
-        ))}
+        {trackers.map((tracker, i) => {
+          const offset = focusOffsets[i] ?? 0;
+          const isActive = i === activeIndex;
+          const absOffset = Math.min(Math.abs(offset), 1);
+          const scale = 1 - absOffset * 0.06;
+          const translateY = absOffset * 14;
+          const rotate = offset * 2.5;
+          const opacity = 1 - absOffset * 0.35;
+
+          return (
+            <div
+              key={tracker.id}
+              ref={(el) => {
+                slideRefs.current[i] = el;
+              }}
+              className="carousel-slide shrink-0 w-[calc(100%-2.5rem)] transition-[transform,opacity] duration-300 ease-out will-change-transform"
+              style={{
+                transform: `scale(${scale}) translateY(${translateY}px) rotateY(${rotate}deg)`,
+                opacity,
+              }}
+            >
+              <TrackerCard
+                tracker={tracker}
+                userId={userId}
+                todayPledged={todayEntries[tracker.id]?.pledged ?? false}
+                todayNote={todayEntries[tracker.id]?.note ?? null}
+                isActive={isActive}
+                focusOffset={offset}
+              />
+            </div>
+          );
+        })}
       </div>
 
-      {trackers.length > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-2">
-          {trackers.map((tracker, i) => (
-            <button
-              key={tracker.id}
-              type="button"
-              aria-label={`Go to tracker ${i + 1}`}
-              onClick={() => {
-                pauseAutoScroll();
-                setActiveIndex(i);
-                scrollToIndex(i);
-              }}
-              className={`h-2 rounded-full transition-all ${
-                i === activeIndex ? "w-6 bg-gold" : "w-2 bg-surface2 hover:bg-mist/40"
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      <div className="mt-5 flex items-center justify-center gap-2">
+        {trackers.map((tracker, i) => (
+          <button
+            key={tracker.id}
+            type="button"
+            aria-label={`Go to tracker ${i + 1}`}
+            onClick={() => {
+              pauseAutoScroll();
+              scrollToIndex(i);
+            }}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === activeIndex
+                ? "w-7 bg-gold shadow-[0_0_12px_rgba(232,168,87,0.45)]"
+                : "w-2 bg-surface2 hover:bg-mist/40"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
