@@ -1,0 +1,13 @@
+{
+  "name": "Daybreak — Sobriety Tracker",
+  "short_name": "Daybreak",
+  "description": "A private, one-day-at-a-time sobriety tracker.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14171F",
+  "theme_color": "#14171F",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
