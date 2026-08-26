@@ -13,7 +13,15 @@ Next.js + Tailwind + Supabase. Installable as a PWA. Built for one user (you) wi
 1. Go to [supabase.com](https://supabase.com) → New project.
 2. Once it's created, go to **SQL Editor** → New query, paste the contents of `supabase/schema.sql`, and run it. This creates the `profiles` and `entries` tables with row-level security so only you can ever read your own data.
 3. Go to **Project Settings → API** and copy the **Project URL** and **anon public key**.
-4. Go to **Authentication → URL Configuration** and add your site URL (e.g. `http://localhost:3000` for now, your Vercel URL later) to the redirect allow-list.
+4. Go to **Authentication → URL Configuration** and set:
+   - **Site URL** — your production Vercel URL (e.g. `https://i-am-sober.vercel.app`)
+   - **Redirect URLs** — add all of these (one per line):
+     ```
+     http://localhost:3000/**
+     https://your-production-url.vercel.app/**
+     https://*-stellier7.vercel.app/**
+     ```
+     The wildcard line covers every Vercel **preview** deployment so you don't have to add each preview URL manually. Replace `stellier7` with your Vercel team/username if different.
 5. (Optional but recommended for a single-user app) Go to **Authentication → Providers → Email** and consider disabling "Confirm email" for faster first sign-in, or just use the magic link as-is.
 
 ## 2. Run it locally
@@ -30,7 +38,7 @@ Open `http://localhost:3000`, enter your email, click the magic link it sends yo
 1. Push this folder to a GitHub repo.
 2. Import it in Vercel.
 3. Add the two env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in the Vercel project settings — enable them for **Production and Preview**, then redeploy.
-4. Deploy, then add the deployed URL to Supabase's redirect allow-list (same place as step 1.4).
+4. Deploy, then in Supabase **Authentication → URL Configuration** add your production URL **and** the Vercel preview wildcard (see step 1.4 above). Preview URLs change on every deploy — the wildcard avoids updating Supabase each time.
 
 ## 4. Install it as an app on your phone/iPad
 Open the deployed URL in Safari/Chrome → Share → **Add to Home Screen**. It'll launch full-screen with no browser chrome, like a native app.
