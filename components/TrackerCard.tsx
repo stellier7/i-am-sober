@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import DawnArc from "@/components/DawnArc";
 import Counter from "@/components/Counter";
 import MilestoneStrip from "@/components/MilestoneStrip";
 import PledgeCard from "@/components/PledgeCard";
+import ReasonsCard from "@/components/ReasonsCard";
 import { useSoberStats } from "@/lib/useSoberStats";
 import { getSubstanceEmoji, getSubstanceLabel } from "@/lib/substances";
 import type { Tracker } from "@/lib/types";
@@ -25,11 +27,19 @@ export default function TrackerCard({
 
   return (
     <article className="flex h-full w-full flex-col">
-      <div className="mb-3 flex items-center gap-2 px-1">
-        <span className="text-xl" aria-hidden>
-          {emoji}
-        </span>
-        <h2 className="font-display text-xl text-paper">{label}</h2>
+      <div className="mb-3 flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xl" aria-hidden>
+            {emoji}
+          </span>
+          <h2 className="font-display text-xl text-paper">{label}</h2>
+        </div>
+        <Link
+          href={`/trackers/${tracker.id}`}
+          className="text-xs text-mist hover:text-paper"
+        >
+          Settings
+        </Link>
       </div>
 
       <div className="rounded-2xl bg-surface overflow-hidden">
@@ -60,19 +70,11 @@ export default function TrackerCard({
         />
       </div>
 
-      {tracker.reasons.length > 0 && (
-        <div className="mt-4 rounded-2xl bg-surface p-5">
-          <h3 className="font-display text-lg text-paper mb-2">Why you started</h3>
-          <ul className="space-y-1.5">
-            {tracker.reasons.map((r, i) => (
-              <li key={i} className="text-sm text-mist flex gap-2">
-                <span className="text-gold">·</span>
-                {r}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ReasonsCard
+        trackerId={tracker.id}
+        substanceLabel={label}
+        reasons={tracker.reasons}
+      />
     </article>
   );
 }
