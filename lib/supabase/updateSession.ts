@@ -11,7 +11,9 @@ type UpdateSessionOptions = {
 };
 
 function hasAuthCookie(request: NextRequest) {
-  return request.cookies.getAll().some((cookie) => cookie.name.includes("-auth-token"));
+  return request.cookies
+    .getAll()
+    .some((cookie) => /^sb-.+-auth-token(?:\.\d+)?$/.test(cookie.name));
 }
 
 export async function updateSession(
@@ -49,9 +51,12 @@ export async function updateSession(
   });
 
   try {
+    // Aborting a slow refresh can theoretically rotate a refresh token without
+    // persisting it. Healthy Auth responds well under this budget; a hung host
+    // must not 504 the whole request.
     await awaitWithTimeout(supabase.auth.getUser(), timeoutMs);
   } catch {
-    // A hung or unreachable Auth server must not 504 the whole request.
+    // Unreachable or hung Auth must not 504 the page.
   }
 
   return response;

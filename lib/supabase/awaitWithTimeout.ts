@@ -9,6 +9,9 @@ export async function awaitWithTimeout<T>(
     timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
   });
 
+  // Swallow a late rejection so a timed-out getUser() cannot surface as unhandled.
+  void promise.catch(() => {});
+
   try {
     return await Promise.race([promise, timeout]);
   } finally {

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { isSupabaseConfigured } from "./env";
 import { createTimedFetch } from "./timedFetch";
 
-const SERVER_AUTH_TIMEOUT_MS = 8_000;
+const SERVER_FETCH_TIMEOUT_MS = 8_000;
 
 export function createClient() {
   if (!isSupabaseConfigured()) {
@@ -17,7 +17,7 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       global: {
-        fetch: createTimedFetch(SERVER_AUTH_TIMEOUT_MS),
+        fetch: createTimedFetch(SERVER_FETCH_TIMEOUT_MS),
       },
       cookies: {
         getAll() {

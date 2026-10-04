@@ -4,6 +4,9 @@ function abortError() {
   return error;
 }
 
+// Reject when the timeout fires even if `fetchImpl` ignores `AbortSignal`.
+// Vercel Edge DNS/TCP hangs often never call the signal handler.
+
 export function createTimedFetch(
   timeoutMs: number,
   fetchImpl: typeof fetch = fetch
