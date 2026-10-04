@@ -1,6 +1,29 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const AUTH_REQUEST_TIMEOUT_MS = 2500;
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    AUTH_REQUEST_TIMEOUT_MS
+  );
+  const abortFromRequest = () => controller.abort(init?.signal?.reason);
+
+  init?.signal?.addEventListener("abort", abortFromRequest, { once: true });
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+    init?.signal?.removeEventListener("abort", abortFromRequest);
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -14,6 +37,9 @@ export async function middleware(request: NextRequest) {
   });
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      fetch: fetchWithTimeout,
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -28,7 +54,11 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // Route handlers still validate auth; a stalled refresh must not block routing.
+  }
 
   return response;
 }
