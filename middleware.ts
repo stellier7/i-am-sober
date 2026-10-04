@@ -1,11 +1,23 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const AUTH_MIDDLEWARE_TIMEOUT_MS = 4000;
+
+function hasSupabaseAuthCookie(request: NextRequest) {
+  return request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("auth-token"));
+}
+
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next();
+  }
+
+  if (!hasSupabaseAuthCookie(request)) {
     return NextResponse.next();
   }
 
@@ -28,7 +40,16 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  try {
+    await Promise.race([
+      supabase.auth.getClaims(),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("AUTH_MIDDLEWARE_TIMEOUT")), AUTH_MIDDLEWARE_TIMEOUT_MS);
+      }),
+    ]);
+  } catch {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
 
   return response;
 }
