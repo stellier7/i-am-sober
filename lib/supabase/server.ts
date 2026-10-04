@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { isSupabaseConfigured } from "./env";
+import { createTimeoutFetch } from "./fetch";
 
 export function createClient() {
   if (!isSupabaseConfigured()) {
@@ -13,6 +14,7 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { fetch: createTimeoutFetch() },
       cookies: {
         getAll() {
           return cookieStore.getAll();
