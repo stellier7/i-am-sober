@@ -45,6 +45,10 @@ Open `http://localhost:3000`, enter your email, click the magic link it sends yo
 ## 4. Install it as an app on your phone/iPad
 Open the deployed URL in Safari/Chrome → Share → **Add to Home Screen**. It'll launch full-screen with no browser chrome, like a native app.
 
+## Troubleshooting
+- **Every page shows `504 MIDDLEWARE_INVOCATION_TIMEOUT` or hangs** — the app can't reach Supabase. The most common cause is a free-tier project that auto-paused after a week of inactivity: open the Supabase dashboard and click **Restore**/**Resume**, or check [status.supabase.com](https://status.supabase.com). Signed-out visitors and the login page keep working through an outage; signed-in pages fall back to the login screen until Supabase answers again.
+- **Login says "Supabase is not configured"** — the env vars are missing from the build. `NEXT_PUBLIC_*` values are baked in at build time, so add them in Vercel project settings and **redeploy**; setting them without a new deploy has no effect.
+
 ## Notes / things you might want to change
 - **App icons**: `public/manifest.json` points to `public/icons/icon-192.png` and `icon-512.png`, which aren't included — drop your own PNGs in there (or ask me to generate placeholders).
 - **Milestones**: edit the `MILESTONES` array in `lib/useSoberStats.ts`.
