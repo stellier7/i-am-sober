@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import TrackerSettingsForm from "@/components/TrackerSettingsForm";
 import type { Tracker } from "@/lib/types";
@@ -15,9 +15,7 @@ export default async function TrackerSettingsPage({
   if (!isSupabaseConfigured()) redirect("/login");
 
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser(supabase);
 
   if (!user) redirect("/login");
 
