@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { describeAuthError } from "@/lib/authError";
 import { createClient } from "@/lib/supabase/client";
 
 const supabaseConfigured = Boolean(
@@ -17,16 +18,21 @@ export default function LoginPage() {
     e.preventDefault();
     setSending(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    setSending(false);
-    if (error) setError(error.message);
-    else setSent(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) setError(describeAuthError(error));
+      else setSent(true);
+    } catch (err) {
+      setError(describeAuthError(err));
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
